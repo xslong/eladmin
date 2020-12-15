@@ -15,13 +15,11 @@
  */
 package me.zhengjie.modules.system.service.impl;
 
-import cn.hutool.core.collection.CollectionUtil;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.exception.BadRequestException;
-import me.zhengjie.modules.security.service.UserCacheClean;
+import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.modules.system.domain.Menu;
 import me.zhengjie.modules.system.domain.Role;
-import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.modules.system.domain.User;
 import me.zhengjie.modules.system.repository.RoleRepository;
 import me.zhengjie.modules.system.repository.UserRepository;
@@ -62,7 +60,6 @@ public class RoleServiceImpl implements RoleService {
     private final RoleSmallMapper roleSmallMapper;
     private final RedisUtils redisUtils;
     private final UserRepository userRepository;
-    private final UserCacheClean userCacheClean;
 
     @Override
     public List<RoleDto> queryAll() {
@@ -213,14 +210,9 @@ public class RoleServiceImpl implements RoleService {
      * @param id /
      */
     public void delCaches(Long id, List<User> users) {
-        users = CollectionUtil.isEmpty(users) ? userRepository.findByRoleId(id) : users;
-        if (CollectionUtil.isNotEmpty(users)) {
-            users.forEach(item -> userCacheClean.cleanUserCache(item.getUsername()));
-            Set<Long> userIds = users.stream().map(User::getId).collect(Collectors.toSet());
-            redisUtils.delByKeys(CacheKey.DATE_USER, userIds);
-            redisUtils.delByKeys(CacheKey.MENU_USER, userIds);
-            redisUtils.delByKeys(CacheKey.ROLE_AUTH, userIds);
-        }
-        redisUtils.del(CacheKey.ROLE_ID + id);
+        redisUtils.delByKeyPrefix(CacheKey.DATE_USER);
+        redisUtils.delByKeyPrefix(CacheKey.MENU_USER);
+        redisUtils.delByKeyPrefix(CacheKey.ROLE_AUTH);
+        redisUtils.delByKeyPrefix(CacheKey.ROLE_ID);
     }
 }

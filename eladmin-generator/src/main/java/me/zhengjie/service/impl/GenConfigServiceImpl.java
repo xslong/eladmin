@@ -15,12 +15,14 @@
  */
 package me.zhengjie.service.impl;
 
+import com.google.common.base.CaseFormat;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.GenConfig;
 import me.zhengjie.repository.GenConfigRepository;
 import me.zhengjie.service.GenConfigService;
 import me.zhengjie.utils.StringUtils;
 import org.springframework.stereotype.Service;
+
 import java.io.File;
 
 /**
@@ -36,8 +38,18 @@ public class GenConfigServiceImpl implements GenConfigService {
     @Override
     public GenConfig find(String tableName) {
         GenConfig genConfig = genConfigRepository.findByTableName(tableName);
-        if(genConfig == null){
-            return new GenConfig(tableName);
+        if (genConfig == null) {
+            GenConfig c = new GenConfig(tableName);
+            c.setTableName(tableName);
+            c.setPack("com.xxx.pri");
+            c.setModuleName("pri-business");
+            c.setAuthor("xslong");
+            c.setPrefix("pri_");
+            String alias = tableName.replaceFirst(c.getPrefix(), "");
+            c.setApiAlias(CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, alias));
+            String str = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, alias);
+            c.setPath("/Users/xslong/Data/Github/xslong/eladmin-web/src/views/pri/" + str);
+            return c;
         }
         return genConfig;
     }
@@ -45,7 +57,7 @@ public class GenConfigServiceImpl implements GenConfigService {
     @Override
     public GenConfig update(String tableName, GenConfig genConfig) {
         // 如果 api 路径为空，则自动生成路径
-        if(StringUtils.isBlank(genConfig.getApiPath())){
+        if (StringUtils.isBlank(genConfig.getApiPath())) {
             String separator = File.separator;
             String[] paths;
             String symbol = "\\";

@@ -20,11 +20,13 @@ import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -705,4 +707,27 @@ public class RedisUtils {
         log.debug("缓存删除数量：" + count + "个");
         log.debug("--------------------------------------------");
     }
+
+    /**
+     * 根据Key 前缀删除
+     * @param prefix
+     * @return
+     */
+    public int delByKeyPrefix(String prefix){
+        return redisTemplate.execute((RedisConnection connection) -> {
+            Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().count(Integer.MAX_VALUE).match(prefix + "*").build());
+            Set<String> keys = new HashSet<>();
+            cursor.forEachRemaining(item -> {
+                String key = new String(item, StandardCharsets.UTF_8);
+                keys.add(key);
+            });
+            int size = keys.size();
+            if (size > 0) {
+                redisTemplate.delete(keys);
+                keys.clear();
+            }
+            return size;
+        });
+    }
+
 }
