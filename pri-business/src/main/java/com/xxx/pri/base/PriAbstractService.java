@@ -62,7 +62,6 @@ public abstract class PriAbstractService<T extends PriBaseEntity<ID>, ID extends
     }
 
     @Override
-    @CacheEvict(allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public <S extends T> S save(S entity) {
         updateOp(entity);
@@ -70,7 +69,6 @@ public abstract class PriAbstractService<T extends PriBaseEntity<ID>, ID extends
     }
 
     @Override
-    @CacheEvict(allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public <S extends T> Iterable<S> save(Iterable<S> entities) {
         String op = getUsername();
@@ -81,7 +79,6 @@ public abstract class PriAbstractService<T extends PriBaseEntity<ID>, ID extends
     }
 
     @Override
-    @CacheEvict(allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public <S extends T> void update(S entity) {
         ID id = entity.getId();
@@ -112,21 +109,18 @@ public abstract class PriAbstractService<T extends PriBaseEntity<ID>, ID extends
 
 
     @Override
-    @CacheEvict(allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public void delete(ID id) {
         getRepository().deleteById(id);
     }
 
     @Override
-    @CacheEvict(allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public void delete(T entity) {
         getRepository().delete(entity);
     }
 
     @Override
-    @CacheEvict(allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public void deleteAll(Iterable<? extends T> entities) {
         if (entities != null && Iterables.size(entities) > 0) {

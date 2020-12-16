@@ -1,18 +1,3 @@
-/*
-*  Copyright 2019-2020 Zheng Jie
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*  http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
 package ${package}.domain;
 
 import lombok.Data;
@@ -34,7 +19,7 @@ import java.sql.Timestamp;
 <#if hasBigDecimal>
 import java.math.BigDecimal;
 </#if>
-import java.io.Serializable;
+import com.xxx.pri.base.PriBaseEntity;
 
 /**
 * @website https://el-admin.vip
@@ -45,14 +30,21 @@ import java.io.Serializable;
 @Entity
 @Data
 @Table(name="${tableName}")
-public class ${className} implements Serializable {
+<#if !auto && pkColumnType = 'String'>
+@org.hibernate.annotations.GenericGenerator(name = "jpa-uuid", strategy = "uuid")
+</#if>
+<#assign ignoreCol = ['create_by', 'update_by', 'create_time', 'update_time']>
+public class ${className} extends PriBaseEntity<${pkColumnType}> {
 <#if columns??>
     <#list columns as column>
-
+<#if !(ignoreCol?seq_contains(column.columnName))>
     <#if column.columnKey = 'PRI'>
     @Id
     <#if auto>
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    </#if>
+    <#if !auto && pkColumnType = 'String'>
+    @GeneratedValue(generator = "jpa-uuid")
     </#if>
     </#if>
     @Column(name = "${column.columnName}"<#if column.columnKey = 'UNI'>,unique = true</#if><#if column.istNotNull && column.columnKey != 'PRI'>,nullable = false</#if>)
@@ -76,6 +68,7 @@ public class ${className} implements Serializable {
     @ApiModelProperty(value = "${column.changeColumnName}")
     </#if>
     private ${column.columnType} ${column.changeColumnName};
+</#if>
     </#list>
 </#if>
 
